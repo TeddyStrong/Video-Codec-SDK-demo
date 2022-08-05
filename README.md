@@ -15,7 +15,7 @@ This demo is tested with WSL2 Ubuntu 18.04. Other required settings are as follo
 mkdir bin
 mkdir build && cd build
 cmake ..
-make
+make && cd ..
 ````
 
 ## Test
@@ -25,6 +25,6 @@ mkdir videos && mkdir outputs
 Place your own video file in ./videos, and change the file paths in ```int main()``` in ./src/demo.cpp.
 ### Run
 ````
-cd ../bin && ./gpu_decoder_demo
+cd bin && ./gpu_decoder_demo $$ cd ../outputs
 ````
 The results are in ./outputs.
