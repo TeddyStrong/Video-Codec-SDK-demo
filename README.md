@@ -19,7 +19,10 @@ make
 ````
 
 ## Test
-Place your own video file in ./videos, and change the file paths in ./src/demo.cpp.
+````
+mkdir videos && mkdir outputs
+````
+Place your own video file in ./videos, and change the file paths in ```int main()``` in ./src/demo.cpp.
 ### Run
 ````
 cd ../bin && ./gpu_decoder_demo
