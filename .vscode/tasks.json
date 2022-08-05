@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "mkdir",
+        "type": "shell",
+        "command": "mkdir build -p"
+      },
+  
+      {
+        "label": "cmake",
+        "type": "shell",
+        "command": "cmake -DCMAKE_BUILD_TYPE=debug ..",
+        "dependsOn": ["mkdir"], 
+        "options": {
+          "cwd": "${workspaceFolder}/build" 
+        },
+      },
+  
+      {
+        "label": "make",
+        "type": "shell",
+        "command": "cd ${workspaceFolder}/build && make -j 8",
+        "options": {
+          "cwd": "${workspaceFolder}/build" 
+        },
+      }
+    ]
+  }
+  

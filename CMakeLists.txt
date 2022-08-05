@@ -1,0 +1,142 @@
+cmake_minimum_required(VERSION 3.7)
+
+project(gpu_decoder_demo)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/bin)
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+set(GPU_DECODER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Video Codec SDK
+set(VIDEO_CODEC_SDK_DIR ~/RII/gpujpeg/Video_Codec_SDK_11.1.5)
+
+set(NVCODEC_PUBLIC_INTERFACE_DIR ${GPU_DECODER_INCLUDE_DIR}/interface)
+set(NVCODEC_UTILS_DIR ${GPU_DECODER_INCLUDE_DIR}/utils)
+set(NV_CODEC_DIR ${GPU_DECODER_INCLUDE_DIR}/nvcodec)
+set(NV_ENC_DIR ${NV_CODEC_DIR}/NvEncoder)
+set(NV_DEC_DIR ${NV_CODEC_DIR}/NvDecoder)
+set(NV_APP_COMMON_DIR ${GPU_DECODER_INCLUDE_DIR}/common)
+set(NVCODEC_DEMO_INSTALL_DIR ${CMAKE_BINARY_DIR})
+
+find_library(CUVID_LIB nvcuvid)
+find_library(NVENCODEAPI_LIB nvidia-encode)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PC_AVCODEC REQUIRED IMPORTED_TARGET libavcodec)
+pkg_check_modules(PC_AVFORMAT REQUIRED IMPORTED_TARGET libavformat)
+pkg_check_modules(PC_AVUTIL REQUIRED IMPORTED_TARGET libavutil)
+pkg_check_modules(PC_SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
+set(NV_FFMPEG_HDRS ${PC_AVCODEC_INCLUDE_DIRS})
+find_library(AVCODEC_LIBRARY NAMES avcodec
+        HINTS
+        ${PC_AVCODEC_LIBDIR}
+        ${PC_AVCODEC_LIBRARY_DIRS}
+        )
+find_library(AVFORMAT_LIBRARY NAMES avformat
+        HINTS
+        ${PC_AVFORMAT_LIBDIR}
+        ${PC_AVFORMAT_LIBRARY_DIRS}
+        )
+find_library(AVUTIL_LIBRARY NAMES avutil
+        HINTS
+        ${PC_AVUTIL_LIBDIR}
+        ${PC_AVUTIL_LIBRARY_DIRS}
+        )
+find_library(SWRESAMPLE_LIBRARY NAMES swresample
+        HINTS
+        ${PC_SWRESAMPLE_LIBDIR}
+        ${PC_SWRESAMPLE_LIBRARY_DIRS}
+        )
+find_library(FREEGLUT_LIB glut)
+find_library(GLEW32_LIB GLEW)
+find_library(X11_LIB X11)
+find_library(GL_LIB GL)
+find_library(CUDART_LIB cudart HINTS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+
+set(AVCODEC_LIB ${AVCODEC_LIBRARY})
+set(AVFORMAT_LIB ${AVFORMAT_LIBRARY})
+set(AVUTIL_LIB ${AVUTIL_LIBRARY})
+set(SWRESAMPLE_LIB ${SWRESAMPLE_LIBRARY})
+
+# Demo sources
+set(DEMO_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/demo.cpp)
+
+set(NV_DEC_SOURCES 
+ ${NV_DEC_DIR}/NvDecoder.cpp
+)
+
+set(NV_ENC_SOURCES
+ ${NV_ENC_DIR}/NvEncoder.cpp
+ ${NV_ENC_DIR}/NvEncoderCuda.cpp
+ ${NV_ENC_DIR}/NvEncoderOutputInVidMemCuda.cpp
+)
+
+set(NV_CUDA_UTILS 
+ ${NVCODEC_UTILS_DIR}/ColorSpace.cu
+ ${NVCODEC_UTILS_DIR}/crc.cu
+ ${NVCODEC_UTILS_DIR}/BitDepth.cu
+ ${NVCODEC_UTILS_DIR}/Resize.cu
+)
+
+set(GPU_DEC_ENC_HDRS 
+ ${GPU_DECODER_INCLUDE_DIR}/decode.h
+ ${GPU_DECODER_INCLUDE_DIR}/encode.h
+ ${GPU_DECODER_INCLUDE_DIR}/dec_enc.h
+)
+
+set(NV_DEC_ENC_HDRS
+ ${NV_DEC_DIR}/NvDecoder.h
+ ${NVCODEC_PUBLIC_INTERFACE_DIR}/cuviddec.h
+ ${NVCODEC_PUBLIC_INTERFACE_DIR}/nvcuvid.h
+ ${NVCODEC_UTILS_DIR}/NvCodecUtils.h
+ ${NVCODEC_UTILS_DIR}/NvEncoderCLIOptions.h
+ ${NVCODEC_UTILS_DIR}/FFmpegDemuxer.h
+ ${NV_APP_COMMON_DIR}/AppDecUtils.h
+ ${NVCODEC_UTILS_DIR}/ColorSpace.h
+ ${NV_ENC_DIR}/NvEncoder.h
+ ${NV_ENC_DIR}/NvEncoderCuda.h
+ ${NV_ENC_DIR}/NvEncoderOutputInVidMemCuda.h
+ ${NVCODEC_PUBLIC_INTERFACE_DIR}/nvEncodeAPI.h
+)
+
+source_group( "headers" FILES ${GPU_DEC_ENC_HDRS} ${NV_DEC_ENC_HDRS})
+source_group( "sources" FILES ${DEMO_SOURCES} ${NV_DEC_SOURCES} ${NV_ENC_SOURCES} ${NV_CUDA_UTILS})
+
+# CUDA
+find_package(CUDA)
+
+set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_75,code=\"sm_75,compute_75\")
+if ( CMAKE_COMPILER_IS_GNUCC )
+    if(NOT "${CUDA_NVCC_FLAGS}" MATCHES "-std=c\\+\\+11" )
+        list(APPEND CUDA_NVCC_FLAGS -std=c++11)
+    endif()
+endif()
+
+cuda_add_executable(${PROJECT_NAME}   ${NV_DEC_ENC_HDRS} ${NV_CUDA_UTILS} ${GPU_DECODER_SOURCES} ${DEMO_SOURCES} ${NV_DEC_SOURCES} ${NV_ENC_SOURCES})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS}
+ ${NVCODEC_PUBLIC_INTERFACE_DIR}
+ ${NVCODEC_UTILS_DIR}
+ ${NV_DEC_DIR}
+ ${NV_APP_COMMON_DIR}
+ ${NV_FFMPEG_HDRS}
+ ${NV_CODEC_DIR}
+ ${GPU_DECODER_INCLUDE_DIR}
+)
+
+target_link_libraries(${PROJECT_NAME} ${CUDA_CUDA_LIBRARY} ${CUDART_LIB} ${CMAKE_DL_LIBS} ${NVENCODEAPI_LIB} ${CUVID_LIB} ${AVCODEC_LIB}
+ ${AVFORMAT_LIB} ${AVUTIL_LIB} ${SWRESAMPLE_LIB} ${FREEGLUT_LIB} ${GLEW32_LIB} ${X11_LIB} ${GL_LIB})
+
+# install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${NVCODEC_DEMO_INSTALL_DIR})
+

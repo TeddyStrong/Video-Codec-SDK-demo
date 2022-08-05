@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "/usr/local/cuda/include",
+                "${workspaceFolder}/include/interface",
+                "${workspaceFolder}/include/utils",
+                "${workspaceFolder}/include/nvcodec",
+                "${workspaceFolder}/include/nvcodec/NvEncoder",
+                "${workspaceFolder}/include/nvcodec/NvDecoder",
+                "${workspaceFolder}/include/common",
+                "${workspaceFolder}/include/common"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceRoot}",
+                    "/usr/local/cuda/lib64",
+                    "/usr/local/lib"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}
