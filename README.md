@@ -3,7 +3,6 @@
 This demo utilizes nvidia's Video Codec SDK and CUDA to realize GPU decoding and encoding acceleration.
 
 ## Dependencies
----
 This demo is tested with WSL2 Ubuntu 18.04. Other required settings are as follows. Note the version used in this demo.
 * gcc 6.5.0
 * CUDA 11.1
@@ -11,7 +10,6 @@ This demo is tested with WSL2 Ubuntu 18.04. Other required settings are as follo
 * CMake 3.10.2
 
 ## Build
----
 ### Build with CMake
 ````
 mkdir bin
@@ -21,7 +19,6 @@ make
 ````
 
 ## Test
----
 Place your own video file in ./videos, and change the file paths in ./src/demo.cpp.
 ### Run
 ````
