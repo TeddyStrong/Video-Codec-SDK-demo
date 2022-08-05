@@ -20,7 +20,7 @@ make && cd ..
 
 ## Test
 ````
-mkdir videos && mkdir outputs
+mkdir videos outputs
 ````
 Place your own video file in ./videos, and change the file paths in ```int main()``` in ./src/demo.cpp.
 ### Run
